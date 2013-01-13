@@ -23,12 +23,13 @@
         <div class="player" style="color: {{ hex }}">{{ name }}</div>
       {{/if}}
     {{/each}}
+    <a id="startOver" href="#">Reset game</a>
   </div>
 </template>
 <template name="roll">
   {{#if playerCount}}
     <div id="roll">
-      <h1>{{ activePlayerName }}'s Turn</h1>
+      <h1><span class="activePlayer">{{ activePlayerName }}</span>'s Turn</h1>
       <div id="die" class="value{{ dieValue }}"></div>
       {{#if isWaiting}}
         <a id="rollLink" href="#">Roll</a>

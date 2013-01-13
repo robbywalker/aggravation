@@ -6,9 +6,23 @@ if (Meteor.isClient) {
   var BOARD_SIZE = 800;
   var HOLE_SPACE = BOARD_SIZE * 0.045;
   var HOLE_SIZE = BOARD_SIZE * 0.03;
-  var DRAW_IDS = true; // for debugging
+  var DRAW_IDS = false; // for debugging
   var COLORS = ['#444444', '#009922', '#cc3333', '#eeeeee', '#3333cc', '#eeee22'];
   var COLOR_NAMES = ['black', 'green', 'red', 'white', 'blue', 'yellow']
+  
+  function getCurrentState() {
+    return States.findOne({'key': 'state'});
+  }
+  
+  function getCurrentPlayer() {
+    var state = getCurrentState();
+    return state && state.player;
+  }
+  
+  function getCurrentStateType() {
+    var state = getCurrentState();
+    return state && state.kind;
+  }
 
   function computePositions() {
     var result = {};
@@ -65,6 +79,10 @@ if (Meteor.isClient) {
 
   function radians(angle) {
     return angle * Math.PI / 180;
+  }
+  
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   function holeCenter(angle, radius) {
@@ -262,18 +280,40 @@ if (Meteor.isClient) {
         Marbles.insert({'position': 'B' + color + '1', 'player': color});
         Marbles.insert({'position': 'B' + color + '2', 'player': color});
         Marbles.insert({'position': 'B' + color + '3', 'player': color});
+        if (!getCurrentState()) {
+          States.insert({'key': 'state', 'player': color, 'kind': 'waiting'});
+        }
       }
     }
   });
   
+  Template.roll.rendered = function() {
+    window.clearInterval(this.rollTimeout);
+    if (getCurrentStateType() == 'rolling') {
+      var s = this;
+      this.rollTimeout = window.setInterval(function() {
+        s.find('#die').className = 'value' + getRandomInt(1, 6);
+      }, 75);
+    } else {
+      var die = this.find('#die');
+      if (die) {
+        die.className = 'value' + Template.roll.dieValue();
+      }
+    }
+  };
+
   Template.roll.dieValue = function() {
-    var item = States.findOne({'key': 'die'});
-    return item ? item.value : 1;
+    var item = States.findOne({'key': 'state'});
+    return item ? item.die : 1;
   };
   
   Template.roll.moves = function() {
-    var value = Template.roll.dieValue();
-    return getLegalMoves(getMarbleMap(), 0 /* TODO */, value);
+    if (getCurrentStateType() == 'rolled') {
+      var value = Template.roll.dieValue();
+      return getLegalMoves(getMarbleMap(), getCurrentPlayer(), value);
+    } else {
+      return [];
+    }
   };
   
   Template.roll.playerCount = function() {
@@ -287,12 +327,52 @@ if (Meteor.isClient) {
     return count;
   };
   
+  Template.roll.activePlayer = getCurrentPlayer;
+
+  Template.roll.activePlayerName = function() {
+    var players = getPlayers();
+    var currentPlayer = getCurrentPlayer();
+    if (currentPlayer in players) {
+      return players[currentPlayer].name;      
+    } else {
+      console.log(currentPlayer + '/' + players.length + '?');
+      return '';
+    }
+  }
+  
+  Template.roll.isWaiting = function() {
+    return getCurrentStateType() == 'waiting';
+  }
+  
+  Template.roll.isRolled = function() {
+    return getCurrentStateType() == 'rolled';
+  }
+  
   Template.roll.events({
+    'click #rollLink': function(e) {
+      States.update({'key': 'state'}, {'$set': {'kind': 'rolling'}});
+      window.setTimeout(function() {
+        States.update({'key': 'state'}, {'$set': {'kind': 'rolled', 'die': getRandomInt(1, 6)}});
+      }, 900);
+    },
     'click .move': function(e) {
       e.preventDefault();
       var move = e.target.innerText.split(' - ');
-      Marbles.update({'position': move[0]}, {'$set': {'position': move[1]}});
-      // TODO: handle opponent marble knock off
+      var moved = false;
+      if (move.length == 2) {
+        Marbles.update({'position': move[0]}, {'$set': {'position': move[1]}});
+        // TODO: handle opponent marble knock off
+        moved = true;
+      }
+      var current = getCurrentPlayer();
+      if (Template.roll.dieValue() != 6 || !moved) {
+        var players = getPlayers();
+        current = (current + 1) % 6;
+        while (players[current].open) {
+          current = (current + 1) % 6;
+        }
+      }
+      States.update({'key': 'state'}, {'$set': {'kind': 'waiting', 'player': current}});
     }
   });
   

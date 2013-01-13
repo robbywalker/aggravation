@@ -30,9 +30,12 @@ body {
 }
 
 .move {
+  color: blue;
+}
+
+#roll > .move {
   display: block;
   margin-bottom: 3px;
-  color: blue;
 }
 
 .value2 {
@@ -53,4 +56,11 @@ body {
 
 .value6 {
   background-position: -210px 0;
+}
+
+#rollLink {
+  display: block;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 8px;
 }

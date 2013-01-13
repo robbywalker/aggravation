@@ -28,14 +28,19 @@
 <template name="roll">
   {{#if playerCount}}
     <div id="roll">
-      <h1>Roll</h1>
+      <h1>{{ activePlayerName }}'s Turn</h1>
       <div id="die" class="value{{ dieValue }}"></div>
-      {{#if moves}}
-        {{#each moves}}
-          <a href="#" class="move">{{ from }} - {{ to }}</a>
-        {{/each}}
-      {{else}}
-        <div>No legal moves!</div>
+      {{#if isWaiting}}
+        <a id="rollLink" href="#">Roll</a>
+      {{/if}}
+      {{#if isRolled}}
+        {{#if moves}}
+          {{#each moves}}
+            <a href="#" class="move">{{ from }} - {{ to }}</a>
+          {{/each}}
+        {{else}}
+          <div>No legal moves! <a href="#" class="move">OK</a></div>
+        {{/if}}
       {{/if}}
     </div>
   {{/if}}

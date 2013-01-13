@@ -11,6 +11,21 @@ if (Meteor.isClient) {
   var COLOR_NAMES = ['black', 'green', 'red', 'white', 'blue', 'yellow'];
   var hoverMove = null;
   
+  function radians(angle) {
+    return angle * Math.PI / 180;
+  }
+  
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function holeCenter(angle, radius) {
+    return [
+      Math.cos(radians(angle)) * radius * HOLE_SPACE + BOARD_SIZE / 2,
+      BOARD_SIZE / 2 - Math.sin(radians(angle)) * radius * HOLE_SPACE
+    ];
+  }
+
   function getCurrentState() {
     return States.findOne({'key': 'state'});
   }
@@ -77,21 +92,6 @@ if (Meteor.isClient) {
     return result;
   }
   var POSITIONS = computePositions();
-
-  function radians(angle) {
-    return angle * Math.PI / 180;
-  }
-  
-  function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  function holeCenter(angle, radius) {
-    return [
-      Math.cos(radians(angle)) * radius * HOLE_SPACE + BOARD_SIZE / 2,
-      BOARD_SIZE / 2 - Math.sin(radians(angle)) * radius * HOLE_SPACE
-    ];
-  }
   
   function drawCircle(ctx, pos, radius, color, width, opt_alpha, opt_fill) {
     ctx.save();

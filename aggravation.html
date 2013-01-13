@@ -4,8 +4,29 @@
 
 <body>
   {{> board}}
+  <div id="right">
+    {{> players}}
+    {{> roll}}
+  </div>
 </body>
 
 <template name="board">
   <canvas id="board"></canvas>
+</template>
+<template name="players">
+  <div id="players">
+    <h1>Players</h1>
+    {{#each players}}
+      <div class="player">{{ name }}</div>
+    {{/each}}
+  </div>
+</template>
+<template name="roll">
+  <div id="roll">
+    <h1>Roll</h1>
+    <div id="die" class="value{{ dieValue }}"></div>
+    {{#each moves}}
+      <a href="#" class="move">{{ from }} - {{ to }}</a>
+    {{/each}}
+  </div>
 </template>

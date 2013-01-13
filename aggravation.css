@@ -1,3 +1,51 @@
 body {
   background: #aaa;
+  font-family: Helvetica;
+}
+
+#right, #board {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#right {
+  margin-top: 80px;
+  margin-left: 30px;
+}
+
+.player {
+  margin-bottom: 8px;
+}
+
+#die {
+  width: 42px;
+  height: 42px;
+  background-image: url(dice.gif);
+  margin-bottom: 8px;
+}
+
+.move {
+  display: block;
+  margin-bottom: 3px;
+  color: blue;
+}
+
+.value2 {
+  background: -42px 0;
+}
+
+.value3 {
+  background-position: -84px 0;
+}
+
+.value4 {
+  background-position: -126px 0;
+}
+
+.value5 {
+  background-position: -168px 0;
+}
+
+.value6 {
+  background-position: -210px 0;
 }

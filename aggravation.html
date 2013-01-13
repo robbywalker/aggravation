@@ -17,16 +17,26 @@
   <div id="players">
     <h1>Players</h1>
     {{#each players}}
-      <div class="player">{{ name }}</div>
+      {{#if open}}
+        <a href="#" class="addPlayer" id="addPlayer{{ color }}" style="color: {{ hex }}">Play as {{ name }}</button>
+      {{else}}
+        <div class="player" style="color: {{ hex }}">{{ name }}</div>
+      {{/if}}
     {{/each}}
   </div>
 </template>
 <template name="roll">
-  <div id="roll">
-    <h1>Roll</h1>
-    <div id="die" class="value{{ dieValue }}"></div>
-    {{#each moves}}
-      <a href="#" class="move">{{ from }} - {{ to }}</a>
-    {{/each}}
-  </div>
+  {{#if playerCount}}
+    <div id="roll">
+      <h1>Roll</h1>
+      <div id="die" class="value{{ dieValue }}"></div>
+      {{#if moves}}
+        {{#each moves}}
+          <a href="#" class="move">{{ from }} - {{ to }}</a>
+        {{/each}}
+      {{else}}
+        <div>No legal moves!</div>
+      {{/if}}
+    </div>
+  {{/if}}
 </template>

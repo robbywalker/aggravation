@@ -13,7 +13,7 @@ body {
   margin-left: 30px;
 }
 
-.player {
+#players a, .player {
   margin-bottom: 8px;
 }
 
@@ -21,7 +21,12 @@ body {
   width: 42px;
   height: 42px;
   background-image: url(dice.gif);
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+#players a {
+  display: block;
+  opacity: 0.4;
 }
 
 .move {

@@ -8,6 +8,7 @@ if (Meteor.isClient) {
   var HOLE_SIZE = BOARD_SIZE * 0.03;
   var DRAW_IDS = true; // for debugging
   var COLORS = ['#444444', '#009922', '#cc3333', '#eeeeee', '#3333cc', '#eeee22'];
+  var COLOR_NAMES = ['black', 'green', 'red', 'white', 'blue', 'yellow']
 
   function computePositions() {
     var result = {};
@@ -145,7 +146,7 @@ if (Meteor.isClient) {
   function getMarbleMap() {
     var map = {};
     Marbles.find({}).forEach(function(item) {
-      map[item.position] = item.group;
+      map[item.position] = item.player;
     });
     return map;
   }
@@ -205,7 +206,7 @@ if (Meteor.isClient) {
           // We actually started on the point and this isn't our last point.
           addAll(result, getLegalMovesForMarble(marbles, start, 'N' + ((num + 14) % 84), player, roll - 1));
         }
-        if (roll == 1) {
+        if (roll == 1 && (current == start || !isPoint(start))) {
           // Move to center.
           if (marbles['C'] != player) {
             result['C'] = player;
@@ -221,7 +222,7 @@ if (Meteor.isClient) {
         addAll(result, getLegalMovesForMarble(marbles, start, 'N' + ((num + 1) % 84), player, roll - 1));
       }      
     } else if (current[0] == 'C') {
-      if (roll == 1) {
+      if (roll == 1 && current == start) {
         for (var destGroup = 0; destGroup < 6; destGroup++) {
           var newPos = 'N' + (destGroup * 14 + 9);
           if (marbles[newPos] != player) {
@@ -236,10 +237,34 @@ if (Meteor.isClient) {
   Template.board.rendered = function() {
     Meteor.autosubscribe(drawBoard);
   };
+  
+  function getPlayers() {
+    var out = [];
+    for (var i = 0; i < 6; i++) {
+      out.push({'open': true, 'name': COLOR_NAMES[i], 'color': i, 'hex': COLORS[i]});
+    }
+    Players.find({}).forEach(function(p) {
+      out[p.color] = {'name': p.name, 'color': p.color, 'hex': COLORS[p.color]};
+    });
+    return out;    
+  }
 
-  Template.players.players = function() {
-    return Players.find({});
-  };
+  Template.players.players = getPlayers;
+  
+  Template.players.events({
+    'click .addPlayer': function(e) {
+      e.preventDefault();
+      var color = parseInt(e.target.id.split(/(\d+)/)[1]);
+      var name = prompt('Enter your name:');
+      if (name) {
+        Players.insert({'name': name, 'color': color});
+        Marbles.insert({'position': 'B' + color + '0', 'player': color});
+        Marbles.insert({'position': 'B' + color + '1', 'player': color});
+        Marbles.insert({'position': 'B' + color + '2', 'player': color});
+        Marbles.insert({'position': 'B' + color + '3', 'player': color});
+      }
+    }
+  });
   
   Template.roll.dieValue = function() {
     var item = States.findOne({'key': 'die'});
@@ -251,14 +276,31 @@ if (Meteor.isClient) {
     return getLegalMoves(getMarbleMap(), 0 /* TODO */, value);
   };
   
+  Template.roll.playerCount = function() {
+    var players = getPlayers();
+    var count = 0;
+    for (var i = 0; i < 6; i++) {
+      if (!players[i].open) {
+        count++;
+      }
+    }
+    return count;
+  };
+  
   Template.roll.events({
-    'click .move': function (e) {
+    'click .move': function(e) {
       e.preventDefault();
       var move = e.target.innerText.split(' - ');
       Marbles.update({'position': move[0]}, {'$set': {'position': move[1]}});
       // TODO: handle opponent marble knock off
     }
   });
+  
+  function reset() {
+    States.remove({});
+    Players.remove({});
+    Marbles.remove({});
+  }
 }
 
 if (Meteor.isServer) {

@@ -10,6 +10,7 @@ if (Meteor.isClient) {
   var COLORS = ['#444444', '#009922', '#cc3333', '#eeeeee', '#3333cc', '#eeee22'];
   var COLOR_NAMES = ['black', 'green', 'red', 'white', 'blue', 'yellow'];
   var hoverMove = null;
+  var claimedPlayers = {};
   
   function radians(angle) {
     return angle * Math.PI / 180;
@@ -303,6 +304,7 @@ if (Meteor.isClient) {
       var color = parseInt(e.target.id.split(/(\d+)/)[1]);
       var name = prompt('Enter your name:');
       if (name) {
+        claimedPlayers[color] = true;
         Players.insert({'name': name, 'color': color});
         Marbles.insert({'position': 'B' + color + '0', 'player': color});
         Marbles.insert({'position': 'B' + color + '1', 'player': color});
@@ -421,6 +423,13 @@ if (Meteor.isClient) {
       drawBoard();
     },
     'click .move': function(e) {
+      var player = getCurrentPlayer();
+      var name = getPlayers()[player].name;
+      if (!claimedPlayers[player] && !confirm('You have not moved as ' + name + ' yet.  Do you still want to play as ' + name + '?')) {
+        return;
+      }
+      claimedPlayers[player] = true;
+      
       hoverMove = null;
       e.preventDefault();
       var moveString = e.target.innerHTML;
@@ -440,7 +449,6 @@ if (Meteor.isClient) {
         // TODO: handle opponent marble knock off
         moved = true;
       }
-      var player = getCurrentPlayer();
       var current = player;
       if (Template.roll.dieValue() != 6 || !moved) {
         var players = getPlayers();

@@ -119,6 +119,7 @@ if (Meteor.isClient) {
     canvas.width = BOARD_SIZE;
     canvas.height = BOARD_SIZE;
     var ctx = canvas.getContext('2d');
+    ctx.translate(0, -50);
     for (var group = 0; group < 6; group++) {
       drawCircle(ctx, POSITIONS['N' + (group * 14 + 4)], HOLE_SIZE / 2 + 2, COLORS[group], 3);
       
@@ -169,6 +170,22 @@ if (Meteor.isClient) {
       ctx.strokeStyle = 'black';
       drawArrow(ctx, from[0], from[1], to[0], to[1], 3, 1);
       ctx.restore();
+    }
+    var state = getCurrentState();
+    var lastMove = state.lastMove;
+    if (lastMove) {
+      var parts = lastMove.split(' - ');
+      if (parts.length == 2) {
+        var from = POSITIONS[parts[0]];
+        var to = POSITIONS[parts[1]];
+        ctx.save();
+        ctx.globalAlpha = 0.75;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = COLORS[state.lastPlayer];
+        ctx.fillStyle = COLORS[state.lastPlayer];
+        drawArrow(ctx, from[0], from[1], to[0], to[1], 3, 1);
+        ctx.restore();
+      }
     }
   }
   
@@ -309,6 +326,7 @@ if (Meteor.isClient) {
       x.style.color = COLORS[getCurrentPlayer()];
     });
     hoverMove = null;
+    drawBoard();
     window.clearInterval(this.rollTimeout);
     if (getCurrentStateType() == 'rolling') {
       var s = this;
@@ -376,7 +394,7 @@ if (Meteor.isClient) {
       }, 900);
     },
     'mouseover .move': function(e) {
-      var move = e.target.innerText.split(' - ');
+      var move = e.target.innerHTML.split(' - ');
       if (move.length == 2) {
         hoverMove = move;
       } else {
@@ -391,7 +409,8 @@ if (Meteor.isClient) {
     'click .move': function(e) {
       hoverMove = null;
       e.preventDefault();
-      var move = e.target.innerText.split(' - ');
+      var moveString = e.target.innerHTML;
+      var move = moveString.split(' - ');
       var moved = false;
       if (move.length == 2) {
         var marbles = getMarbleMap();
@@ -407,7 +426,8 @@ if (Meteor.isClient) {
         // TODO: handle opponent marble knock off
         moved = true;
       }
-      var current = getCurrentPlayer();
+      var player = getCurrentPlayer();
+      var current = player;
       if (Template.roll.dieValue() != 6 || !moved) {
         var players = getPlayers();
         current = (current + 1) % 6;
@@ -415,7 +435,7 @@ if (Meteor.isClient) {
           current = (current + 1) % 6;
         }
       }
-      States.update({'key': 'state'}, {'$set': {'kind': 'waiting', 'player': current}});
+      States.update({'key': 'state'}, {'$set': {'kind': 'waiting', 'player': current, 'lastMove': moveString, 'lastPlayer': player}});
     }
   });
   

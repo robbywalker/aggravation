@@ -172,7 +172,7 @@ if (Meteor.isClient) {
       ctx.restore();
     }
     var state = getCurrentState();
-    var lastMove = state.lastMove;
+    var lastMove = state && state.lastMove;
     if (lastMove) {
       var parts = lastMove.split(' - ');
       if (parts.length == 2) {
@@ -384,6 +384,20 @@ if (Meteor.isClient) {
   
   Template.roll.isRolled = function() {
     return getCurrentStateType() == 'rolled';
+  }
+  
+  Template.roll.winner = function() {
+    var marbles = getMarbleMap();
+    for (var player = 0; player < 6; player++) {
+      for (var h = 0; h < 4; h++) {
+        if (!(('H' + player + '' + h) in marbles)) {
+          break;
+        }
+      }
+      if (h == 4) {
+        return getPlayers()[player].name;
+      }
+    }
   }
   
   Template.roll.events({

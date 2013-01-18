@@ -437,7 +437,7 @@ if (Meteor.isClient) {
       var moved = false;
       if (move.length == 2) {
         var marbles = getMarbleMap();
-        if (marbles[move[1]]) {
+        if (move[1] in marbles) {
           var openBase;
           var opponent = marbles[move[1]];
           for (openBase = 0; ('B' + opponent + '' + openBase) in marbles; openBase++) {

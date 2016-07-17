@@ -18,7 +18,7 @@
     <h1>Players</h1>
     {{#each players}}
       {{#if open}}
-        <a href="#" class="addPlayer" id="addPlayer{{ color }}" style="color: {{ hex }}">Play as {{ name }}</button>
+        <a href="#" class="addPlayer" id="addPlayer{{ color }}" style="color: {{ hex }}">Play as {{ name }}</a>
       {{else}}
         <div class="player" style="color: {{ hex }}">{{ name }}</div>
       {{/if}}
